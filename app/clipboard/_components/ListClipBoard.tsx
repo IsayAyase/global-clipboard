@@ -64,10 +64,12 @@ export default function ListClipBoard() {
 
 export function ClipBoardItem({
     item,
+    showLink = false,
     expended,
     toggleExpend,
 }: {
     item: IClipBoard;
+    showLink?: boolean;
     expended?: boolean;
     toggleExpend?: () => void;
 }) {
@@ -108,6 +110,10 @@ export function ClipBoardItem({
                         </span>
                     </div>
 
+                    {showLink && item.text && (
+                        <CopyToClipboard text={item.text} label={cbLink} />
+                    )}
+
                     <p
                         className={`w-full leading-5 text-sm ${
                             !expended ? "line-clamp-3 sm:line-clamp-2" : ""
@@ -121,7 +127,9 @@ export function ClipBoardItem({
                         className="text-destructive hover:text-destructive"
                         code={item.code}
                     />
-                    {item.text && <CopyToClipboard text={item.text} />}
+                    {item.text && !showLink && (
+                        <CopyToClipboard text={item.text} />
+                    )}
                 </div>
             </CardContent>
         </Card>

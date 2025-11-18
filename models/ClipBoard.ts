@@ -33,9 +33,11 @@ const clipBoardSchema = new mongoose.Schema<IClipBoard>(
     },
     {
         timestamps: true,
-        expireAfterSeconds: 60 * 60, // 1 hour
     }
 );
+
+// TTL index on createdAt (30 minutes)
+clipBoardSchema.index({ createdAt: 1 }, { expireAfterSeconds: 1800 });
 
 export default (mongoose.models?.ClipBoard as mongoose.Model<IClipBoard>) ||
     mongoose.model<IClipBoard>("ClipBoard", clipBoardSchema);

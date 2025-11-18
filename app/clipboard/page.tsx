@@ -1,5 +1,3 @@
-"use client";
-
 import AddToClipBoard from "./_components/AddToClipBoard";
 import DeleteAllBtn from "./_components/DeleteAllBtn";
 import ListClipBoard from "./_components/ListClipBoard";

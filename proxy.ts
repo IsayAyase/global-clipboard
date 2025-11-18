@@ -6,7 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 import envvars from "./constants/envvars";
 import connectDB from "./lib/connectDB";
 
-const endpointsToSkipRedirect = ["/api/login", "/api/logout", "/api/verify", "/api/cb"];
+const endpointsToSkipRedirect = [
+    "/api/login",
+    "/api/logout",
+    "/api/verify",
+    "/api/cb",
+    "/api/clipboard",
+];
 
 const baseUrl = envvars.NEXT_URL;
 

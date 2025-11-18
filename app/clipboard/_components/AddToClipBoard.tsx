@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useClipBoardStore } from "@/store/clipBoard";
-import { ClipBoardAccess } from "@/types/clipBoard";
+import { useUserStore } from "@/store/user";
+import { ClipBoardAccess, IClipBoard } from "@/types/clipBoard";
 import {
     Earth,
     EarthLock,
@@ -15,20 +16,50 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PiNumberCircleOne, PiNumberCircleOneFill } from "react-icons/pi";
+import { toast } from "sonner";
 import { createClipboard } from "../../apiCalls";
+import { ClipBoardItem } from "./ListClipBoard";
 
-export default function AddToClipBoard() {
-    const { addData, setError } = useClipBoardStore();
+export default function AddToClipBoard({
+    showLinkWhenAdded = false,
+}: {
+    showLinkWhenAdded?: boolean;
+}) {
+    const { isAuthenticated } = useUserStore();
+    const { addData, setError, error } = useClipBoardStore();
     const [text, setText] = useState("");
     const [loading, setLoading] = useState(false);
     const [access, setAccess] = useState<ClipBoardAccess>("PUBLIC");
     const [enableCurl, setEnableCurl] = useState(false);
     const [enableOneFetch, setEnableOneFetch] = useState(false);
 
+    const [savedData, setSavedData] = useState<IClipBoard | null>(null);
+
     const textInputRef = useRef<HTMLTextAreaElement>(null);
 
     const handleSubmit = async (e?: any) => {
         if (e) e.preventDefault();
+
+        if (loading) return;
+        setSavedData(null);
+
+        // valibating...
+        const trimedtext = text.trim();
+        if (trimedtext === "") {
+            setError("Text can't be empty");
+            return;
+        } else if (!isAuthenticated && access === "PRIVATE") {
+            setError("Can't create private clipboard. You are not logged in!");
+            return;
+        } else if (enableCurl && access !== "PUBLIC") {
+            setError("Can't enable curl for private clipboard!");
+            return;
+        } else if (trimedtext.length > 5000) {
+            setError("Text can't be more than 5000 characters!");
+            return;
+        }
+
+        // sending...
         const resData = await createClipboard(
             {
                 text,
@@ -41,10 +72,19 @@ export default function AddToClipBoard() {
         );
 
         if (resData) {
+            setSavedData(resData);
             addData(resData);
             setText("");
         }
     };
+
+    useEffect(() => {
+        if (error)
+            toast.error(error, {
+                onDismiss: () => setError(null),
+                onAutoClose: () => setError(null),
+            });
+    }, [error]);
 
     useEffect(() => {
         if (loading) return;
@@ -55,7 +95,7 @@ export default function AddToClipBoard() {
                 textInputRef.current === document.activeElement &&
                 textInputRef.current?.value.trim() !== "" &&
                 event.key === "Enter" &&
-                !event.shiftKey
+                event.ctrlKey
             ) {
                 handleSubmit();
             }
@@ -70,17 +110,17 @@ export default function AddToClipBoard() {
     return (
         <Card className="">
             <CardTitle className="text-lg px-6">Add to Clipboard</CardTitle>
-            <CardContent>
+            <CardContent className="space-y-4">
                 <form
                     autoFocus
                     onSubmit={handleSubmit}
-                    className="flex flex-col gap-2 w-full"
+                    className="flex flex-col gap-4 w-full"
                 >
                     <Textarea
                         autoFocus
                         ref={textInputRef}
                         name="text"
-                        placeholder="Type something. (Shift + Enter for send!)"
+                        placeholder="Type something. (Ctrl + Enter to Add!)"
                         disabled={loading}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
@@ -103,6 +143,7 @@ export default function AddToClipBoard() {
                                         p === "PUBLIC" ? "PRIVATE" : "PUBLIC"
                                     )
                                 }
+                                disabled={!isAuthenticated || loading}
                             >
                                 {access === "PUBLIC" ? <LockOpen /> : <Lock />}
                                 <span className="capitalize">
@@ -114,6 +155,7 @@ export default function AddToClipBoard() {
                                 variant={enableCurl ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => setEnableCurl(!enableCurl)}
+                                disabled={loading}
                             >
                                 {enableCurl ? <Earth /> : <EarthLock />}
                                 <span>cURL</span>
@@ -125,6 +167,7 @@ export default function AddToClipBoard() {
                                 onClick={() =>
                                     setEnableOneFetch(!enableOneFetch)
                                 }
+                                disabled={loading}
                             >
                                 {enableOneFetch ? (
                                     <PiNumberCircleOneFill />
@@ -134,7 +177,12 @@ export default function AddToClipBoard() {
                                 <span>One Fetch</span>
                             </Button>
                         </div>
-                        <Button disabled={loading} type="submit" size="sm" className="w-fit">
+                        <Button
+                            disabled={loading}
+                            type="submit"
+                            size="sm"
+                            className="w-fit"
+                        >
                             {loading ? (
                                 <LoaderCircle className="animate-spin" />
                             ) : (
@@ -143,7 +191,16 @@ export default function AddToClipBoard() {
                             <span>Add</span>
                         </Button>
                     </div>
+                    {!isAuthenticated && (
+                        <span className="italic text-xs text-muted-foreground">
+                            *You need to be logged in to use private access!
+                        </span>
+                    )}
                 </form>
+
+                {showLinkWhenAdded && savedData && (
+                    <ClipBoardItem showLink item={savedData} />
+                )}
             </CardContent>
         </Card>
     );

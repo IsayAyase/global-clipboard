@@ -25,7 +25,7 @@ export async function copyToClipboardFunc(
     if (setLoading) setLoading(false);
 }
 
-export default function CopyToClipboard({ text }: { text: string }) {
+export default function CopyToClipboard({ text, label }: { text: string; label?: string }) {
     const [loading, setLoading] = useState(false);
     function copy() {
         if (loading) return;
@@ -34,12 +34,12 @@ export default function CopyToClipboard({ text }: { text: string }) {
 
     return (
         <Button
-            variant={"ghost"}
-            size={"icon-sm"}
+            variant={label ? "outline" : "ghost"}
+            size={label ? "sm" : "icon-sm"}
             disabled={loading}
             onClick={copy}
         >
-            <Copy />
+            {label || <Copy />}
         </Button>
     );
 }
