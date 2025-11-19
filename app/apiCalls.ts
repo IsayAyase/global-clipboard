@@ -1,6 +1,7 @@
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
+import APIResponseError from "@/lib/APIResponseError";
 import { ClipBoardPayloadType, IClipBoard } from "@/types/clipBoard";
 
 export const createClipboard = async (
@@ -37,14 +38,18 @@ export const getClipboard = async (
     try {
         setLoading(true);
 
-        const data = await apiClient<IClipBoard>(`/api/cb?code=${code}`, {
+        const data = await apiClient<IClipBoard>(`/cb?code=${code}&mode=api`, {
             method: "GET",
         });
 
         return data;
     } catch (err) {
         console.error(err);
-        setError("Failed to load clipboards");
+        if (err instanceof APIResponseError) {
+            setError(`${err.message}: ${err.statusCode} (${err.statusCode === 404 ? "Not Found" : ""})`);
+        } else {
+            setError("Failed to load clipboards");
+        }
         return null;
     } finally {
         setLoading(false);

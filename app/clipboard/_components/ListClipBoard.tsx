@@ -5,7 +5,7 @@ import envvars from "@/constants/envvars";
 import { formatDateAgo } from "@/lib/dateFormat";
 import { useClipBoardStore } from "@/store/clipBoard";
 import { IClipBoard } from "@/types/clipBoard";
-import { Earth, Lock } from "lucide-react";
+import { Copy, Earth, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PiNumberCircleOne } from "react-icons/pi";
 import { toast } from "sonner";
@@ -79,7 +79,7 @@ export function ClipBoardItem({
     return (
         <Card
             onClick={() =>
-                loading
+                loading || showLink
                     ? null
                     : copyToClipboardFunc(
                           cbLink,
@@ -111,7 +111,10 @@ export function ClipBoardItem({
                     </div>
 
                     {showLink && item.text && (
-                        <CopyToClipboard text={item.text} label={cbLink} />
+                        <div className="border px-2 py-1 rounded-md bg-secondary flex gap-2 items-center">
+                            <Copy className="size-4" />
+                            <span>{cbLink}</span>
+                        </div>
                     )}
 
                     <p

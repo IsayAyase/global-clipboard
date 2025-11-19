@@ -14,6 +14,7 @@ export type APIResponse = {
         value: string;
         maxAge?: number;
     }[];
+    headers?: Record<string, string>;
 } | null;
 
 /**
@@ -23,7 +24,7 @@ export type APIResponse = {
  */
 export default function APIWrapper(
     handler: (req: NextRequest, user?: IUser) => Promise<APIResponse>
-): (req: NextRequest) => Promise<NextResponse> {
+): (req: NextRequest) => Promise<NextResponse | Response> {
     return async (req: NextRequest) => {
         try {
             await connectDB();
@@ -31,8 +32,17 @@ export default function APIWrapper(
             const user = userString ? JSON.parse(userString) : null;
 
             const output = await handler(req, user);
+            const isContentTypeProvided = output?.headers?.["Content-Type"];
+            if (isContentTypeProvided) {
+                return new Response(output.data, {
+                    status: output?.statusCode || 200,
+                    headers: output?.headers,
+                });
+            }
+
             const res = NextResponse.json(output, {
                 status: output?.statusCode || 200,
+                headers: output?.headers,
             });
             if (output?.cookies) {
                 output.cookies.forEach((cookie) => {

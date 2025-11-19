@@ -43,6 +43,7 @@ export default function UserDropDown() {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                    variant="destructive"
                     onClick={() => handleLogout(setLoadingLogout)}
                     disabled={loadingLogout}
                 >

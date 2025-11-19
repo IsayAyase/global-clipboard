@@ -37,7 +37,10 @@ export default function CopyToClipboard({ text, label }: { text: string; label?:
             variant={label ? "outline" : "ghost"}
             size={label ? "sm" : "icon-sm"}
             disabled={loading}
-            onClick={copy}
+            onClick={(e) => {
+                e.stopPropagation();
+                copy();
+            }}
         >
             {label || <Copy />}
         </Button>

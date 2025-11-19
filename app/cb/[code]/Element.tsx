@@ -23,7 +23,16 @@ export default function Element({ code }: { code: string }) {
             {loading ? (
                 <ClipBoardItemLoading />
             ) : !cbData ? (
-                <div></div>
+                <div>
+                    {error ? (
+                        <div className="flex flex-col">
+                            <span className="text-lg text-destructive">Error</span>
+                            <span className="text-sm text-muted-foreground">{error}</span>
+                        </div>
+                    ) : (
+                        <ClipBoardItemLoading />
+                    )}
+                </div>
             ) : (
                 <ClipBoardItem item={cbData} />
             )}
