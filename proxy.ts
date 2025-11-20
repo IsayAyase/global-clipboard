@@ -12,6 +12,7 @@ const endpointsToSkipRedirect = [
     "/api/verify",
     "/api/cb",
     "/api/clipboard",
+    "/cb",
 ];
 
 const baseUrl = envvars.NEXT_URL;
@@ -22,9 +23,10 @@ export async function proxy(request: NextRequest) {
         `${baseUrl}/login?pathname=${pathname}`
     );
 
+    // loose check
     let redirectSkip = false;
     for (const endpoint of endpointsToSkipRedirect) {
-        if (endpoint.includes(pathname)) {
+        if (endpoint.startsWith(pathname)) {
             redirectSkip = true;
             break;
         }
@@ -49,7 +51,7 @@ export async function proxy(request: NextRequest) {
         if (!user) {
             return redirectSkip ? NextResponse.next() : redirectUrl;
         }
-
+        
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set("x-user", JSON.stringify(user));
 
@@ -66,5 +68,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/api/:path*", "/clipboard/:path*"],
+    matcher: ["/api/:path*", "/clipboard/:path*", "/cb/:path*"],
 };
