@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
+import Background from "./_components/Background";
 
 const ubuntu = Ubuntu({
     subsets: ["latin"],
@@ -25,21 +26,21 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${ubuntu.variable} antialiased`}>
+            <body className={`${ubuntu.className} antialiased`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
                     enableSystem
-                    disableTransitionOnChange
                 >
-                    <Toaster position="top-right" />
-                    <div className="max-w-xl w-full mx-auto px-4 lg:px-0">
+                    <Toaster position="top-center" />
+                    <div className="min-h-dvh max-w-xl w-full mx-auto px-4 lg:px-0">
                         <NavBar />
-                        <div className="">{children}</div>
+                        <div className="h-full">{children}</div>
                         <Footer />
                     </div>
-                    <LoadUserState />
+                    <Background />
                 </ThemeProvider>
+                <LoadUserState />
             </body>
         </html>
     );

@@ -1,8 +1,7 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { IoSunnyOutline } from "react-icons/io5";
-import { RiMoonClearLine } from "react-icons/ri";
 import { Button } from "./ui/button";
 
 const ThemeBtn = () => {
@@ -21,19 +20,18 @@ const ThemeBtn = () => {
     };
 
     return (
-        <Button
-            size={"icon"}
-            variant="outline"
-            onClick={toggleTheme}
-            className={`transform ${
-                theme === "light" ? "rotate-180" : "rotate-0"
-            } transition-all duration-300 ease-out`}
-        >
-            {theme === "light" ? (
-                <IoSunnyOutline className="size-5" />
-            ) : (
-                <RiMoonClearLine className="size-5" />
-            )}
+        <Button size={"icon"} variant="outline" onClick={toggleTheme}>
+            <span
+                className={`transform ${
+                    theme === "light" ? "rotate-180" : "rotate-0"
+                } transition-all duration-300 ease-out`}
+            >
+                {theme === "light" ? (
+                    <Sun className="size-5" />
+                ) : (
+                    <Moon className="size-5" />
+                )}
+            </span>
         </Button>
     );
 };

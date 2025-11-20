@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/apiClient";
 import { useUserStore } from "@/store/user";
 import { IUser } from "@/types/user";
 import { GoogleLogin } from "@react-oauth/google";
+import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { IoLogoGoogle } from "react-icons/io5";
@@ -71,10 +72,24 @@ export default function OAuthGoogleBtn() {
                 onClick={handleCtkBtn}
                 disabled={loading || data !== null}
                 type="button"
-                className="mt-2 px-4 flex items-center justify-center gap-1"
+                className="mt-2 px-4 flex items-center justify-center gap-1 w-full"
             >
-                <IoLogoGoogle />
-                <span>Login with Google</span>
+                <motion.span
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1.5, 1.5, 1, 0.9, 1] }}
+                    transition={{ duration: 1.2 }}
+                    className="truncate"
+                >
+                    <IoLogoGoogle />
+                </motion.span>
+                <motion.span
+                    initial={{ width: 0 }}
+                    animate={{ width: "fit-content" }}
+                    transition={{ duration: 1 }}
+                    className="truncate"
+                >
+                    Login with Google
+                </motion.span>
             </Button>
         </>
     );
