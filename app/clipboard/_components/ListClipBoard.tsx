@@ -1,16 +1,17 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import envvars from "@/constants/envvars";
 import { formatDateAgo } from "@/lib/dateFormat";
 import { useClipBoardStore } from "@/store/clipBoard";
 import { IClipBoard } from "@/types/clipBoard";
-import { Copy, Earth, Lock } from "lucide-react";
+import { Earth, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PiNumberCircleOne } from "react-icons/pi";
 import { toast } from "sonner";
 import { getAllClipboards } from "../../apiCalls";
-import CopyToClipboard, { copyToClipboardFunc } from "./CopyToClipboard";
+import { copyToClipboardFunc } from "./CopyToClipboard";
 import DeleteFromClipBoardBtn from "./DeleteFromClipBoardBtn";
 
 export default function ListClipBoard() {
@@ -64,22 +65,62 @@ export default function ListClipBoard() {
 
 export function ClipBoardItem({
     item,
-    showLink = false,
     expended,
     toggleExpend,
 }: {
     item: IClipBoard;
-    showLink?: boolean;
     expended?: boolean;
     toggleExpend?: () => void;
 }) {
     const [loading, setLoading] = useState(false);
     const cbLink = `${envvars.NEXT_URL}/cb/${item.code}`;
+    const cbCurl = `curl -s ${envvars.NEXT_URL}/cb?code=${item.code}`;
+    const cbCode = item.code;
+    const cbText = item.text;
+
+    const handleCopy = (
+        e: React.MouseEvent,
+        type: "link" | "curl" | "code" | "text"
+    ) => {
+        e.stopPropagation();
+        if (loading) return;
+
+        let text: string | undefined = "";
+        let msg = "Copied!";
+        switch (type) {
+            case "link":
+                text = cbLink;
+                msg = "Link copied!";
+                break;
+            case "curl":
+                text = cbCurl;
+                msg = "Curl cmd copied!";
+                break;
+            case "code":
+                text = cbCode;
+                msg = "Code copied!";
+                break;
+            case "text":
+                text = cbText;
+                msg = "Text copied!";
+                break;
+        }
+
+        if (!text) return;
+
+        copyToClipboardFunc(
+            text,
+            setLoading,
+            toast,
+            msg,
+            "Error copying link!"
+        );
+    };
 
     return (
         <Card
             onClick={() =>
-                loading || showLink
+                loading
                     ? null
                     : copyToClipboardFunc(
                           cbLink,
@@ -91,15 +132,23 @@ export function ClipBoardItem({
             }
             className="relative cursor-default shadow-[0_0_20px_1px] shadow-transparent hover:shadow-primary/10 hover:scale-[100.5%] transition-all duration-100 ease-in-out"
         >
-            <CardContent className="flex justify-between items-start gap-4">
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap gap-2 items-center">
+            <CardContent className="flex flex-col gap-2">
+                <div className="flex gap-2 justify-between items-center w-full">
+                    <div className="flex gap-2 items-center">
                         {item.access === "PRIVATE" && (
-                            <Lock className="size-4" />
+                            <span title="Private Access">
+                                <Lock className="size-4" />
+                            </span>
                         )}
-                        {item.enableCurl && <Earth className="size-4" />}
+                        {item.enableCurl && (
+                            <span title="Curl is enabled">
+                                <Earth className="size-4" />
+                            </span>
+                        )}
                         {item.enableOneFetch && (
-                            <PiNumberCircleOne className="size-4" />
+                            <span title="One fetch is enabled">
+                                <PiNumberCircleOne className="size-4" />
+                            </span>
                         )}
                         <span className="text-xs text-muted-foreground">
                             {item.access &&
@@ -109,37 +158,53 @@ export function ClipBoardItem({
                             {formatDateAgo(item.createdAt)}
                         </span>
                     </div>
-
-                    {showLink && item.text && (
-                        <div className="border px-2 py-1 rounded-md bg-secondary flex gap-2 items-center">
-                            <Copy className="size-4" />
-                            <span>{cbLink}</span>
-                        </div>
-                    )}
-
-                    <p
-                        className={`w-full leading-5 text-sm ${
-                            !expended ? "line-clamp-3 sm:line-clamp-2" : ""
-                        }`}
-                    >
-                        {item.text}
-                    </p>
+                    <DeleteFromClipBoardBtn code={item.code} />
                 </div>
-                <div className="absolute top-0 right-0 m-2 z-10 flex gap-1 items-center">
-                    <DeleteFromClipBoardBtn
-                        className="text-destructive hover:text-destructive"
-                        code={item.code}
-                    />
-                    {item.text && !showLink && (
-                        <CopyToClipboard text={item.text} />
-                    )}
-                </div>
+
+                <p
+                    className={`w-full leading-5 text-sm ${
+                        !expended ? "line-clamp-3 sm:line-clamp-2" : ""
+                    }`}
+                >
+                    {item.text}
+                </p>
+
+                {item.text && (
+                    <div className="flex gap-2 items-center">
+                        <Button
+                            onClick={(e) => handleCopy(e, "link")}
+                            size={"sm"}
+                        >
+                            Copy Link
+                        </Button>
+                        {item.text && item.enableCurl && (
+                            <Button
+                                onClick={(e) => handleCopy(e, "curl")}
+                                size={"sm"}
+                            >
+                                Copy cURL cmd
+                            </Button>
+                        )}
+                        <Button
+                            onClick={(e) => handleCopy(e, "code")}
+                            size={"sm"}
+                        >
+                            Copy Code
+                        </Button>
+                        <Button
+                            onClick={(e) => handleCopy(e, "text")}
+                            size={"sm"}
+                        >
+                            Copy Text
+                        </Button>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
 }
 
-export function ClipBoardItemLoading({}: {}) {
+export function ClipBoardItemLoading() {
     return (
         <Card className="">
             <CardContent className="flex justify-between items-start gap-4">

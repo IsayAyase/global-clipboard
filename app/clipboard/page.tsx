@@ -5,7 +5,7 @@ import ListClipBoard from "./_components/ListClipBoard";
 export default function Page() {
     return (
         <div className="">
-            <div className="sticky top-4 space-y-6 z-10 bg-background">
+            <div className="space-y-6">
                 <AddToClipBoard />
 
                 <div className="flex items-center justify-between gap-4 pb-4">
@@ -13,7 +13,7 @@ export default function Page() {
                     <DeleteAllBtn />
                 </div>
             </div>
-            <div className="">
+            <div className="overflow-y-auto h-[500px] w-full px-2">
                 <ListClipBoard />
             </div>
         </div>

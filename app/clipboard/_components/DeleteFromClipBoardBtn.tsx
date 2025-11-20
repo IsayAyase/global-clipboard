@@ -32,11 +32,12 @@ export default function DeleteFromClipBoardBtn({
         <Button
             className={className}
             onClick={handleDelete}
-            variant={"ghost"}
-            size={"icon-sm"}
+            variant={"destructive"}
+            size={"sm"}
             disabled={loading}
         >
             {loading ? <LoaderCircle className="animate-spin" /> : <Trash />}
+            <span>Delete</span>
         </Button>
     );
 }

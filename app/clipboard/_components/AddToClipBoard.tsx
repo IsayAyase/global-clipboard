@@ -143,7 +143,9 @@ export default function AddToClipBoard({
                                         p === "PUBLIC" ? "PRIVATE" : "PUBLIC"
                                     )
                                 }
-                                disabled={!isAuthenticated || loading}
+                                disabled={
+                                    !isAuthenticated || loading || enableCurl
+                                }
                             >
                                 {access === "PUBLIC" ? <LockOpen /> : <Lock />}
                                 <span className="capitalize">
@@ -154,7 +156,10 @@ export default function AddToClipBoard({
                                 type="button"
                                 variant={enableCurl ? "default" : "outline"}
                                 size="sm"
-                                onClick={() => setEnableCurl(!enableCurl)}
+                                onClick={() => {
+                                    setEnableCurl(!enableCurl);
+                                    setAccess("PUBLIC");
+                                }}
                                 disabled={loading}
                             >
                                 {enableCurl ? <Earth /> : <EarthLock />}
@@ -199,7 +204,7 @@ export default function AddToClipBoard({
                 </form>
 
                 {showLinkWhenAdded && savedData && (
-                    <ClipBoardItem showLink item={savedData} />
+                    <ClipBoardItem item={savedData} />
                 )}
             </CardContent>
         </Card>
