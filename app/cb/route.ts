@@ -1,5 +1,6 @@
 import APIResponseError from "@/lib/APIResponseError";
 import APIWrapper from "@/lib/APIWrapper";
+import redisCaching from "@/lib/redisCaching";
 import ClipBoard from "@/models/ClipBoard";
 import { IUser } from "@/types/user";
 import { NextRequest } from "next/server";
@@ -11,7 +12,14 @@ export const GET = APIWrapper(async (request: NextRequest, user?: IUser) => {
         throw new APIResponseError("Missing code", 400);
     }
 
-    const cb = await ClipBoard.findOne({ code });
+    let cb = null;
+    cb = await redisCaching.getClip(code);
+    if (cb) {
+        cb = await ClipBoard.findOne({ code });
+        if (cb) {
+            await redisCaching.setClip(code, cb);
+        }
+    }
     if (!cb) {
         throw new APIResponseError("Invalid code", 404);
     }

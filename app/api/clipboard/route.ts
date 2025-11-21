@@ -1,5 +1,6 @@
 import APIResponseError from "@/lib/APIResponseError";
 import APIWrapper from "@/lib/APIWrapper";
+import redisCaching from "@/lib/redisCaching";
 import ClipBoard from "@/models/ClipBoard";
 import { ClipBoardPayloadType } from "@/types/clipBoard";
 import { IUser } from "@/types/user";
@@ -62,6 +63,8 @@ export const POST = APIWrapper(async (request: NextRequest, user?: IUser) => {
     });
     await newCB.save();
 
+    await redisCaching.setClip(code, newCB);
+
     return {
         statusCode: 200,
         msg: "Added in the clipboard!",
@@ -75,13 +78,13 @@ export const GET = APIWrapper(async (request: NextRequest, user?: IUser) => {
         {
             $match: {
                 userId: new mongoose.Types.ObjectId(user?._id),
-            }
+            },
         },
         {
             $sort: {
                 createdAt: -1,
             },
-        }
+        },
     ]);
     return {
         statusCode: 200,
@@ -98,7 +101,9 @@ export const DELETE = APIWrapper(async (request: NextRequest, user?: IUser) => {
     }
 
     if (all) {
-        await ClipBoard.deleteMany({ userId: new mongoose.Types.ObjectId(user?._id) });
+        await ClipBoard.deleteMany({
+            userId: new mongoose.Types.ObjectId(user?._id),
+        });
         return {
             statusCode: 200,
             msg: "Disapeared like they'll never existed!",
@@ -115,6 +120,8 @@ export const DELETE = APIWrapper(async (request: NextRequest, user?: IUser) => {
     if (!cb) {
         throw new APIResponseError("Invalid code", 400);
     }
+
+    if (code) await redisCaching.deleteClip(code);
 
     return {
         statusCode: 200,

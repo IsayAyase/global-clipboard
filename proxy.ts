@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 import envvars from "./constants/envvars";
 import connectDB from "./lib/connectDB";
+import { handleLimiter } from "./lib/rateLimiter";
 
 const endpointsToSkipRedirect = [
     "/api/login",
@@ -16,24 +17,6 @@ const endpointsToSkipRedirect = [
 ];
 
 const baseUrl = envvars.APP_URL;
-
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-const ratelimit = new Ratelimit({
-    redis: new Redis({
-        url: envvars.REDIS_URL,
-        token: envvars.REDIS_TOKEN,
-    }),
-    limiter: Ratelimit.slidingWindow(5, "20 s"), // 5 req per 20 s
-    prefix: "ratelimit",
-});
-
-async function handleLimiter(req: NextRequest) {
-    const ip = req.headers.get("x-forwarded-for") ?? "unknown_ip";
-    const { success } = await ratelimit.limit(ip);
-    return { success, ip };
-}
 
 export async function proxy(request: NextRequest) {
     try {
@@ -61,7 +44,7 @@ export async function proxy(request: NextRequest) {
     // loose check
     let redirectSkip = false;
     for (const endpoint of endpointsToSkipRedirect) {
-        if (endpoint.startsWith(pathname)) {
+        if (pathname.startsWith(endpoint)) {
             redirectSkip = true;
             break;
         }
@@ -72,12 +55,13 @@ export async function proxy(request: NextRequest) {
         if (!authToken) {
             return redirectSkip ? NextResponse.next() : redirectUrl;
         }
+        
 
         const userToken = getAuthToken(authToken.value);
         if (!userToken) {
             return redirectSkip ? NextResponse.next() : redirectUrl;
         }
-
+        
         // ensure database connection
         await connectDB();
         const user = await User.findOne({
