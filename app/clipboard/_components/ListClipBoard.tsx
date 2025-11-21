@@ -73,8 +73,8 @@ export function ClipBoardItem({
     toggleExpend?: () => void;
 }) {
     const [loading, setLoading] = useState(false);
-    const cbLink = `${envvars.NEXT_URL}/cb/${item.code}`;
-    const cbCurl = `curl -s ${envvars.NEXT_URL}/cb?code=${item.code}`;
+    const cbLink = `${envvars.APP_URL}/cb/${item.code}`;
+    const cbCurl = `curl -s ${envvars.APP_URL}/cb?code=${item.code}`;
     const cbCode = item.code;
     const cbText = item.text;
 

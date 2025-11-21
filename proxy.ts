@@ -15,9 +15,44 @@ const endpointsToSkipRedirect = [
     "/cb",
 ];
 
-const baseUrl = envvars.NEXT_URL;
+const baseUrl = envvars.APP_URL;
+
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const ratelimit = new Ratelimit({
+    redis: new Redis({
+        url: envvars.REDIS_URL,
+        token: envvars.REDIS_TOKEN,
+    }),
+    limiter: Ratelimit.slidingWindow(5, "20 s"), // 5 req per 20 s
+    prefix: "ratelimit",
+});
+
+async function handleLimiter(req: NextRequest) {
+    const ip = req.headers.get("x-forwarded-for") ?? "unknown_ip";
+    const { success } = await ratelimit.limit(ip);
+    return { success, ip };
+}
 
 export async function proxy(request: NextRequest) {
+    try {
+        const { success, ip } = await handleLimiter(request);
+        if (!success) {
+            console.log(`[RATELIMIT]: ${ip} blocked`);
+            return NextResponse.json(
+                { error: "Too many requests" },
+                { status: 429 }
+            );
+        }
+    } catch (error) {
+        console.log("[RATELIMIT Error]:", error);
+        return NextResponse.json(
+            { error: "Something went wrong" },
+            { status: 500 }
+        );
+    }
+
     const pathname = request.nextUrl.pathname;
     const redirectUrl = NextResponse.redirect(
         `${baseUrl}/login?pathname=${pathname}`
@@ -51,7 +86,7 @@ export async function proxy(request: NextRequest) {
         if (!user) {
             return redirectSkip ? NextResponse.next() : redirectUrl;
         }
-        
+
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set("x-user", JSON.stringify(user));
 

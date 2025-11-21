@@ -23,7 +23,15 @@ export const createClipboard = async (
         return data;
     } catch (err) {
         console.error(err);
-        setError("Something went wrong");
+        if (err instanceof APIResponseError) {
+            setError(
+                `${err.message}: ${err.statusCode} (${
+                    err.statusCode === 404 ? "Not Found" : ""
+                })`
+            );
+        } else {
+            setError("Something went wrong");
+        }
         return null;
     } finally {
         setLoading(false);
@@ -46,7 +54,11 @@ export const getClipboard = async (
     } catch (err) {
         console.error(err);
         if (err instanceof APIResponseError) {
-            setError(`${err.message}: ${err.statusCode} (${err.statusCode === 404 ? "Not Found" : ""})`);
+            setError(
+                `${err.message}: ${err.statusCode} ${
+                    err.statusCode === 404 ? "(Not Found)" : ""
+                }`
+            );
         } else {
             setError("Failed to load clipboards");
         }
