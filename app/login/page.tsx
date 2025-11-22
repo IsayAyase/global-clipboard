@@ -1,7 +1,9 @@
 import OAuthGoogleBtn from "@/components/OAuthGoogleBtn";
 import envvars from "@/constants/envvars";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Loader } from "lucide-react";
 import Image from "next/image";
+import { Suspense } from "react";
 
 export default function Page() {
     return (
@@ -20,7 +22,11 @@ export default function Page() {
                             *ClipB
                         </span>
                     </div>
-                    <OAuthGoogleBtn />
+                    <Suspense
+                        fallback={<Loader className="size-5 animate-spin" />}
+                    >
+                        <OAuthGoogleBtn />
+                    </Suspense>
                 </div>
             </GoogleOAuthProvider>
         </div>
