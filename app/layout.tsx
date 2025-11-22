@@ -17,6 +17,9 @@ const ubuntu = Ubuntu({
 export const metadata: Metadata = {
     title: "ClipB",
     description: "Clipboard made simple.",
+    icons: {
+        icon: "/logo.png",
+    },
     openGraph: {
         title: "ClipB",
         description: "Clipboard made simple.",

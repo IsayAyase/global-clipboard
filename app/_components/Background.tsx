@@ -18,7 +18,7 @@ export default function Background() {
                         "40px 40px, 40px 40px, 40px 40px, 40px 40px",
                 }}
                 animate={{
-                    backgroundPosition: ["40px 0px", "0px 0px"],
+                    backgroundPosition: ["0px 0px 0px", "40px 0px"],
                 }}
                 transition={{
                     duration: 3,
@@ -39,7 +39,7 @@ export default function Background() {
                         "40px 40px, 40px 40px, 40px 40px, 40px 40px",
                 }}
                 animate={{
-                    backgroundPosition: ["0px 0px", "40px 0px"],
+                    backgroundPosition: ["40px 0px", "0px 0px"],
                 }}
                 transition={{
                     duration: 3,
