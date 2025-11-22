@@ -134,7 +134,7 @@ Creates a new clipboard entry.
 
 ```json
 {
-    "text": "optional text content", // there should be at least text or fileUrl(not added yet!)
+    "text": "optional text content", // there should be at least text or fileUrl(not implemented yet!)
     "fileUrl": "optional file url",
     "access": "PRIVATE",
     "enableCurl": true,
